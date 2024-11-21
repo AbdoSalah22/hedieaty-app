@@ -1,20 +1,51 @@
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
+import '../models/user_model.dart';
+import 'login_page.dart';
 
-class HedieatyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hedieaty',
-      theme: ThemeData(
-        primaryColor: Color(0xFF3A86FF), // Soft Blue
-        hintColor: Color(0xFF83C5BE), // Light Teal
-      ),
-      home: LoginScreen(),
+
+class SignupScreen extends StatelessWidget {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<void> _handleSignup(BuildContext context) async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields.')),
+      );
+      return;
+    }
+
+    final dbHelper = DatabaseHelper();
+    final hashedPassword = User.hashPassword(password);
+
+    final newUser = User(
+      name: name,
+      email: email,
+      password: hashedPassword,
     );
-  }
-}
 
-class LoginScreen extends StatelessWidget {
+    try {
+      await dbHelper.insertUser(newUser);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration successful! Please log in.')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error registering user: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,13 +58,13 @@ class LoginScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Icon(
-                  Icons.card_giftcard,
+                Icons.person_add,
                 color: Color(0xFF3A86FF),
                 size: 64,
               ),
               SizedBox(height: 6),
               Text(
-                'Hedieaty',
+                'Sign Up',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -43,14 +74,25 @@ class LoginScreen extends StatelessWidget {
               ),
               SizedBox(height: 48),
               TextField(
+                controller: nameController,
                 decoration: InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Name',
                   border: OutlineInputBorder(),
                   labelStyle: TextStyle(color: Color(0xFF757575)), // Soft Gray
                 ),
               ),
               SizedBox(height: 16),
               TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Color(0xFF757575)), // Soft Gray
+                ),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -60,9 +102,7 @@ class LoginScreen extends StatelessWidget {
               ),
               SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
-                  // Add login functionality here
-                },
+                onPressed: () => _handleSignup(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF3A86FF), // Soft Blue
                   padding: EdgeInsets.symmetric(vertical: 16),
@@ -71,7 +111,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Login',
+                  'Sign Up',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -81,10 +121,13 @@ class LoginScreen extends StatelessWidget {
               SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  // Add sign-up navigation here
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
                 },
                 child: Text(
-                  'Sign Up',
+                  'Back to Login',
                   style: TextStyle(
                     color: Color(0xFF3A86FF), // Soft Blue
                     fontSize: 16,

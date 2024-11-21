@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hedieaty/screens/pledged_gifts_page.dart';
+import 'package:hedieaty/views/pledged_gifts_page.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
